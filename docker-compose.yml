@@ -1,0 +1,61 @@
+version: '3.8'
+
+services:
+  # PostgreSQL Database
+  postgres:
+    image: postgres:15-alpine
+    container_name: aplayer-postgres
+    environment:
+      POSTGRES_USER: aplayer
+      POSTGRES_PASSWORD: aplayer123
+      POSTGRES_DB: aplayer_hiring
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U aplayer"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # FastAPI Backend
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: aplayer-backend
+    environment:
+      DATABASE_URL: postgresql+asyncpg://aplayer:aplayer123@postgres:5432/aplayer_hiring
+      DATABASE_URL_SYNC: postgresql://aplayer:aplayer123@postgres:5432/aplayer_hiring
+      SECRET_KEY: development-secret-key-change-in-production-min-32-chars
+      DEBUG: "true"
+      BACKEND_CORS_ORIGINS: '["http://localhost:3000","http://localhost"]'
+    ports:
+      - "8000:8000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    volumes:
+      - ./backend/app:/app/app
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+
+  # React Frontend
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: aplayer-frontend
+    environment:
+      VITE_API_URL: http://localhost:8000
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
+
+volumes:
+  postgres_data:
+
+networks:
+  default:
+    name: aplayer-network
