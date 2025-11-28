@@ -4,6 +4,7 @@ from .candidate import Candidate
 from .scorecard import Scorecard, ScorecardOutcome, ScorecardCompetency, CompetencyIndicator
 from .interview import Interview, JobHistory, InterviewQuestion, RedFlag
 from .assessment import CEOAssessment, CEOBehaviorRating, PowerScoreAssessment, PowerScoreResponse, DevelopmentPlan
+from .lencioni import IdealTeamPlayerAssessment, IdealTeamPlayerVirtueRating, CoreValuesAssessment, CoreValueRating
 from .system import AppSetting, ExportHistory
 
 __all__ = [
@@ -21,6 +22,10 @@ __all__ = [
     "PowerScoreAssessment",
     "PowerScoreResponse",
     "DevelopmentPlan",
+    "IdealTeamPlayerAssessment",
+    "IdealTeamPlayerVirtueRating",
+    "CoreValuesAssessment",
+    "CoreValueRating",
     "AppSetting",
     "ExportHistory",
 ]

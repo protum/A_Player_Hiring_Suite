@@ -79,3 +79,25 @@ export const systemApi = {
 };
 
 export default api;
+
+// Ideal Team Player Assessments
+export const idealTeamPlayerApi = {
+  getQuestions: () => api.get('/assessments/ideal-team-player/questions'),
+  list: (subjectId?: string) => api.get('/assessments/ideal-team-player', { params: { subject_id: subjectId } }),
+  create: (data: any) => api.post('/assessments/ideal-team-player', data),
+  get: (id: string) => api.get(`/assessments/ideal-team-player/${id}`),
+  getInsights: (id: string) => api.get(`/assessments/ideal-team-player/${id}/insights`),
+  delete: (id: string) => api.delete(`/assessments/ideal-team-player/${id}`),
+  exportPdf: (id: string) => api.get(`/assessments/ideal-team-player/${id}/export/pdf`, { responseType: 'blob' }),
+};
+
+// Core Values Assessments
+export const coreValuesApi = {
+  getQuestions: () => api.get('/assessments/core-values/questions'),
+  list: (subjectId?: string) => api.get('/assessments/core-values', { params: { subject_id: subjectId } }),
+  create: (data: any) => api.post('/assessments/core-values', data),
+  get: (id: string) => api.get(`/assessments/core-values/${id}`),
+  getInsights: (id: string) => api.get(`/assessments/core-values/${id}/insights`),
+  delete: (id: string) => api.delete(`/assessments/core-values/${id}`),
+  exportPdf: (id: string) => api.get(`/assessments/core-values/${id}/export/pdf`, { responseType: 'blob' }),
+};

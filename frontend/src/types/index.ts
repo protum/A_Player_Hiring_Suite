@@ -140,3 +140,57 @@ export interface PowerScoreAssessment {
   responses: PowerScoreResponse[];
   development_plans: DevelopmentPlan[];
 }
+
+// Ideal Team Player Types
+export interface VirtueRating {
+  id?: string;
+  virtue: 'humble' | 'hungry' | 'smart';
+  question_id: string;
+  question_text: string;
+  response_value: number;
+  evidence?: string;
+}
+
+export interface IdealTeamPlayerAssessment {
+  id: string;
+  subject_id: string;
+  assessment_date: string;
+  assessment_type: 'self' | 'observer' | 'interview';
+  assessor_name?: string;
+  humble_score: number;
+  hungry_score: number;
+  smart_score: number;
+  overall_score: number;
+  category?: string;
+  notes?: string;
+  created_at: string;
+  virtue_ratings: VirtueRating[];
+}
+
+// Core Values Types
+export interface CoreValueRating {
+  id?: string;
+  value: 'personal_growth' | 'harmonious_relationships' | 'problem_solving' | 'positive_impact' | 'financial_stewardship';
+  question_id: string;
+  question_text: string;
+  response_value: number;
+  evidence?: string;
+}
+
+export interface CoreValuesAssessment {
+  id: string;
+  subject_id: string;
+  assessment_date: string;
+  assessment_type: 'interview' | 'behavioral' | 'reference';
+  assessor_name?: string;
+  personal_growth_score: number;
+  harmonious_relationships_score: number;
+  problem_solving_score: number;
+  positive_impact_score: number;
+  financial_stewardship_score: number;
+  overall_alignment_score: number;
+  alignment_level?: string;
+  notes?: string;
+  created_at: string;
+  value_ratings: CoreValueRating[];
+}

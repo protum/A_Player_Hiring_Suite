@@ -372,3 +372,218 @@ def _get_rating_label(score: float) -> str:
         return "Needs Development"
     else:
         return "Critical Gap"
+
+
+def generate_ideal_team_player_pdf(assessment: Any, db: Session) -> bytes:
+    """Generate PDF for Ideal Team Player assessment."""
+    buffer = BytesIO()
+    doc = SimpleDocTemplate(buffer, pagesize=letter)
+    story = []
+    styles = _get_styles()
+
+    # Get subject info
+    subject = db.query(Candidate).filter(Candidate.id == assessment.subject_id).first()
+
+    # Title
+    story.append(Paragraph("Ideal Team Player Assessment", styles['CustomTitle']))
+    story.append(Paragraph("Based on Patrick Lencioni's Framework", styles['Normal']))
+    story.append(Spacer(1, 0.2 * inch))
+
+    # Subject Information
+    if subject:
+        story.append(Paragraph(f"<b>Subject:</b> {subject.first_name} {subject.last_name}", styles['CustomBody']))
+    story.append(Paragraph(f"<b>Assessment Type:</b> {assessment.assessment_type}", styles['CustomBody']))
+    story.append(Paragraph(f"<b>Assessment Date:</b> {assessment.assessment_date.strftime('%Y-%m-%d')}", styles['CustomBody']))
+    if assessment.assessor_name:
+        story.append(Paragraph(f"<b>Assessor:</b> {assessment.assessor_name}", styles['CustomBody']))
+    story.append(Spacer(1, 0.3 * inch))
+
+    # Category and Overall Score
+    from ..services.lencioni_service import get_ideal_team_player_insights
+    insights = get_ideal_team_player_insights(assessment.category)
+    
+    story.append(Paragraph(f"<b>Category:</b> {insights['label']}", styles['CustomHeading']))
+    story.append(Paragraph(insights['description'], styles['CustomBody']))
+    story.append(Spacer(1, 0.2 * inch))
+
+    # Three Virtues Scores
+    story.append(Paragraph("The Three Virtues", styles['CustomHeading']))
+    virtue_data = [
+        ['Virtue', 'Score', 'Rating'],
+        ['Humble', f"{assessment.humble_score:.2f}/5.0", _get_virtue_rating(assessment.humble_score)],
+        ['Hungry', f"{assessment.hungry_score:.2f}/5.0", _get_virtue_rating(assessment.hungry_score)],
+        ['Smart (People Smart)', f"{assessment.smart_score:.2f}/5.0", _get_virtue_rating(assessment.smart_score)],
+        ['', '', ''],
+        ['<b>Overall Score</b>', f"<b>{assessment.overall_score:.2f}/5.0</b>", ''],
+    ]
+
+    virtue_table = Table(virtue_data, colWidths=[2.5 * inch, 1.5 * inch, 3 * inch])
+    virtue_table.setStyle(TableStyle([
+        ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#1e40af')),
+        ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
+        ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
+        ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+        ('GRID', (0, 0), (-1, -2), 1, colors.black),
+        ('BACKGROUND', (0, 1), (-1, -2), colors.beige),
+        ('FONTNAME', (0, -1), (-1, -1), 'Helvetica-Bold'),
+    ]))
+    story.append(virtue_table)
+    story.append(Spacer(1, 0.3 * inch))
+
+    # Hiring Recommendation
+    story.append(Paragraph("Assessment Summary", styles['CustomHeading']))
+    story.append(Paragraph(f"<b>Hiring Recommendation:</b> {insights['hiring_recommendation']}", styles['CustomBody']))
+    story.append(Paragraph(f"<b>Development Focus:</b> {insights['development']}", styles['CustomBody']))
+
+    if assessment.notes:
+        story.append(Spacer(1, 0.2 * inch))
+        story.append(Paragraph("<b>Additional Notes:</b>", styles['CustomBody']))
+        story.append(Paragraph(assessment.notes, styles['CustomBody']))
+
+    # Framework explanation
+    story.append(Spacer(1, 0.3 * inch))
+    story.append(Paragraph("About the Three Virtues", styles['CustomHeading']))
+    story.append(Paragraph("<b>Humble:</b> Lacks excessive ego, shares credit, defines success collectively", styles['CustomBody']))
+    story.append(Paragraph("<b>Hungry:</b> Self-motivated, diligent, always looking to do more", styles['CustomBody']))
+    story.append(Paragraph("<b>Smart (People Smart):</b> Has common sense about people and good emotional intelligence", styles['CustomBody']))
+
+    # Footer
+    story.append(Spacer(1, 0.5 * inch))
+    story.append(Paragraph(
+        f"Based on 'The Ideal Team Player' by Patrick Lencioni | Generated: {datetime.now().strftime('%Y-%m-%d %H:%M')}",
+        styles['Normal']
+    ))
+
+    doc.build(story)
+    buffer.seek(0)
+    return buffer.getvalue()
+
+
+def generate_core_values_pdf(assessment: Any, db: Session) -> bytes:
+    """Generate PDF for Core Values assessment."""
+    buffer = BytesIO()
+    doc = SimpleDocTemplate(buffer, pagesize=letter)
+    story = []
+    styles = _get_styles()
+
+    # Get subject info
+    subject = db.query(Candidate).filter(Candidate.id == assessment.subject_id).first()
+
+    # Title
+    story.append(Paragraph("Core Values Assessment", styles['CustomTitle']))
+    story.append(Paragraph("Organizational Cultural Fit Evaluation", styles['Normal']))
+    story.append(Spacer(1, 0.2 * inch))
+
+    # Subject Information
+    if subject:
+        story.append(Paragraph(f"<b>Subject:</b> {subject.first_name} {subject.last_name}", styles['CustomBody']))
+    story.append(Paragraph(f"<b>Assessment Type:</b> {assessment.assessment_type}", styles['CustomBody']))
+    story.append(Paragraph(f"<b>Assessment Date:</b> {assessment.assessment_date.strftime('%Y-%m-%d')}", styles['CustomBody']))
+    if assessment.assessor_name:
+        story.append(Paragraph(f"<b>Assessor:</b> {assessment.assessor_name}", styles['CustomBody']))
+    story.append(Spacer(1, 0.3 * inch))
+
+    # Overall Alignment
+    from ..services.lencioni_service import get_core_values_insights
+    scores_dict = {
+        "personal_growth_score": assessment.personal_growth_score,
+        "harmonious_relationships_score": assessment.harmonious_relationships_score,
+        "problem_solving_score": assessment.problem_solving_score,
+        "positive_impact_score": assessment.positive_impact_score,
+        "financial_stewardship_score": assessment.financial_stewardship_score,
+        "overall_alignment_score": assessment.overall_alignment_score,
+    }
+    insights = get_core_values_insights(assessment.alignment_level, scores_dict)
+
+    story.append(Paragraph(f"<b>Alignment Level:</b> {insights['label']}", styles['CustomHeading']))
+    story.append(Paragraph(f"<b>Overall Score:</b> {assessment.overall_alignment_score:.1f}/100", styles['CustomBody']))
+    story.append(Paragraph(insights['description'], styles['CustomBody']))
+    story.append(Spacer(1, 0.3 * inch))
+
+    # Five Core Values Scores
+    story.append(Paragraph("Core Values Scores", styles['CustomHeading']))
+    values_data = [
+        ['Core Value', 'Score', 'Rating'],
+        ['Personal Growth', f"{assessment.personal_growth_score:.1f}/100", _get_rating_label(assessment.personal_growth_score)],
+        ['Harmonious Relationships', f"{assessment.harmonious_relationships_score:.1f}/100", _get_rating_label(assessment.harmonious_relationships_score)],
+        ['Problem Solving', f"{assessment.problem_solving_score:.1f}/100", _get_rating_label(assessment.problem_solving_score)],
+        ['Positive Impact', f"{assessment.positive_impact_score:.1f}/100", _get_rating_label(assessment.positive_impact_score)],
+        ['Financial Stewardship', f"{assessment.financial_stewardship_score:.1f}/100", _get_rating_label(assessment.financial_stewardship_score)],
+    ]
+
+    values_table = Table(values_data, colWidths=[2.5 * inch, 1.2 * inch, 3.3 * inch])
+    values_table.setStyle(TableStyle([
+        ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#1e40af')),
+        ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
+        ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
+        ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+        ('GRID', (0, 0), (-1, -1), 1, colors.black),
+        ('BACKGROUND', (0, 1), (-1, -1), colors.beige),
+    ]))
+    story.append(values_table)
+    story.append(Spacer(1, 0.3 * inch))
+
+    # Key Insights
+    story.append(Paragraph("Key Insights", styles['CustomHeading']))
+    story.append(Paragraph(f"<b>Hiring Recommendation:</b> {insights['hiring_recommendation']}", styles['CustomBody']))
+    
+    if 'strongest_value' in insights:
+        story.append(Paragraph(
+            f"<b>Strongest Value:</b> {insights['strongest_value']['name']} ({insights['strongest_value']['score']:.1f}/100)",
+            styles['CustomBody']
+        ))
+    if 'weakest_value' in insights:
+        story.append(Paragraph(
+            f"<b>Development Opportunity:</b> {insights['weakest_value']['name']} ({insights['weakest_value']['score']:.1f}/100)",
+            styles['CustomBody']
+        ))
+    
+    story.append(Paragraph(f"<b>Onboarding Focus:</b> {insights['onboarding_focus']}", styles['CustomBody']))
+
+    if assessment.notes:
+        story.append(Spacer(1, 0.2 * inch))
+        story.append(Paragraph("<b>Additional Notes:</b>", styles['CustomBody']))
+        story.append(Paragraph(assessment.notes, styles['CustomBody']))
+
+    # Core Values Definitions
+    story.append(PageBreak())
+    story.append(Paragraph("Core Values Definitions", styles['CustomHeading']))
+    
+    core_values_defs = [
+        ("Personal Growth", "We pursue mastery, learn continuously, and improve our capabilities every day."),
+        ("Harmonious Relationships", "We foster trust, communicate with respect, and collaborate effectively."),
+        ("Problem Solving", "We face challenges with clarity, creativity, and discipline, always fixing root causes."),
+        ("Positive Impact", "We aim to elevate every person we serve—clients, colleagues, and communities."),
+        ("Financial Stewardship", "We create value, drive revenue, and build long-term financial strength."),
+    ]
+    
+    for value_name, definition in core_values_defs:
+        story.append(Paragraph(f"<b>{value_name}:</b> {definition}", styles['CustomBody']))
+        story.append(Spacer(1, 0.1 * inch))
+
+    # Footer
+    story.append(Spacer(1, 0.5 * inch))
+    story.append(Paragraph(
+        f"Organizational Core Values Assessment | Generated: {datetime.now().strftime('%Y-%m-%d %H:%M')}",
+        styles['Normal']
+    ))
+
+    doc.build(story)
+    buffer.seek(0)
+    return buffer.getvalue()
+
+
+def _get_virtue_rating(score: float) -> str:
+    """Get rating label for virtue score."""
+    if score >= 4.5:
+        return "Exceptional"
+    elif score >= 4.0:
+        return "Strong"
+    elif score >= 3.5:
+        return "Good"
+    elif score >= 3.0:
+        return "Adequate"
+    elif score >= 2.0:
+        return "Needs Development"
+    else:
+        return "Weak"

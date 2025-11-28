@@ -1,11 +1,13 @@
 import { BrowserRouter, Routes, Route, Link, useLocation } from 'react-router-dom';
-import { HomeIcon, DocumentTextIcon, UserGroupIcon, ChartBarIcon, TrophyIcon, Cog6ToothIcon } from '@heroicons/react/24/outline';
+import { HomeIcon, DocumentTextIcon, UserGroupIcon, ChartBarIcon, TrophyIcon, UserIcon, HeartIcon, Cog6ToothIcon } from '@heroicons/react/24/outline';
 import Dashboard from './pages/Dashboard';
 import Candidates from './pages/Candidates';
 import Scorecards from './pages/Scorecards';
 import Interviews from './pages/Interviews';
 import CEOAssessments from './pages/CEOAssessments';
 import PowerScore from './pages/PowerScore';
+import IdealTeamPlayer from './pages/IdealTeamPlayer';
+import CoreValues from './pages/CoreValues';
 import Settings from './pages/Settings';
 
 const navigation = [
@@ -15,6 +17,8 @@ const navigation = [
   { name: 'Interviews', href: '/interviews', icon: UserGroupIcon },
   { name: 'CEO Behaviors', href: '/ceo-assessments', icon: ChartBarIcon },
   { name: 'Power Score', href: '/power-score', icon: TrophyIcon },
+  { name: 'Ideal Team Player', href: '/ideal-team-player', icon: UserIcon },
+  { name: 'Core Values', href: '/core-values', icon: HeartIcon },
   { name: 'Settings', href: '/settings', icon: Cog6ToothIcon },
 ];
 
@@ -67,9 +71,10 @@ function AppContent() {
           <Route path="/interviews" element={<Interviews />} />
           <Route path="/ceo-assessments" element={<CEOAssessments />} />
           <Route path="/power-score" element={<PowerScore />} />
+          <Route path="/ideal-team-player" element={<IdealTeamPlayer />} />
+          <Route path="/core-values" element={<CoreValues />} />
           <Route path="/settings" element={<Settings />} />
-        </Routes>
-      </main>
+        </Routes>      </main>
     </div>
   );
 }
